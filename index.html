@@ -34,23 +34,27 @@
       linear-gradient(to bottom, var(--bg-color), #090a0f);
   }
 
-  /* Header Branding */
   #brand { 
     display: flex;
+    flex-direction: column; /* لجعل الصورة فوق الاسم */
     align-items: center;
     justify-content: center;
     gap: 15px;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
     animation: fadeInDown 0.8s ease-out;
   }
   
   #brand img { 
-    width: 60px; 
-    height: 60px; 
+    width: 160px; /* حجم كبير جداً */
+    height: 160px; 
     border-radius: 50%;
-    box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
-    border: 2px solid rgba(0, 210, 255, 0.5);
+    box-shadow: 0 0 30px rgba(0, 210, 255, 0.4);
+    border: 3px solid rgba(0, 210, 255, 0.6);
+    object-fit: cover;
   }
+
+
+
   
   #brand b { 
     font-size: 32px; 
