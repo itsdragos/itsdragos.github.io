@@ -1,41 +1,20 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="UTF-8">
-<title>PS4 Audio Test</title>
-</head>
+<body style="background:#000;color:white;text-align:center">
 
-<body style="background:#111;color:white;text-align:center;padding-top:100px;">
+<h2>PS4 TEST</h2>
 
-<h2>PS4 Audio Test</h2>
-
-<button id="start" style="font-size:25px;padding:20px;">
-    PRESS X / CLICK
-</button>
-
-<video id="music"
-       loop
-       playsinline
-       style="display:none;">
+<video
+    controls
+    autoplay
+    loop
+    playsinline
+    width="640"
+    height="360">
+    
     <source src="song.mp4" type="video/mp4">
+    
 </video>
-
-<script>
-document.getElementById("start").addEventListener("click", function () {
-
-    const music = document.getElementById("music");
-
-    music.play()
-        .then(() => {
-            document.getElementById("start").textContent = "🎵 PLAYING";
-        })
-        .catch((error) => {
-            document.getElementById("start").textContent = "❌ ERROR";
-            console.log(error);
-        });
-
-});
-</script>
 
 </body>
 </html>
