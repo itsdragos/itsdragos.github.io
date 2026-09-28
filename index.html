@@ -1,35 +1,17 @@
 <!DOCTYPE html>
 <html>
-<body style="background:#111;color:white">
+<head>
+    <meta charset="UTF-8">
+    <title>PS4 Audio Test</title>
+</head>
 
-<h1>Audio Test</h1>
+<body style="background:#111;color:white;font-size:30px">
 
-<audio controls preload="auto">
-    <source src="./song.mp3" type="audio/mpeg">
-    Your browser does not support audio.
+<h1>PS4 AUDIO TEST</h1>
+
+<audio controls>
+    <source src="song.mp3">
 </audio>
-
-<p id="status">Testing...</p>
-
-<script>
-window.onload = function () {
-    var audio = document.querySelector("audio");
-    var status = document.getElementById("status");
-
-    audio.addEventListener("canplay", function () {
-        status.innerHTML = "CAN PLAY";
-    });
-
-    audio.addEventListener("error", function () {
-        status.innerHTML = "AUDIO ERROR";
-        console.log(audio.error);
-    });
-
-    audio.addEventListener("loadeddata", function () {
-        status.innerHTML = "AUDIO LOADED";
-    });
-};
-</script>
 
 </body>
 </html>
