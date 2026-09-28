@@ -1,20 +1,154 @@
 <!DOCTYPE html>
-<html>
-<body style="background:#000;color:white;text-align:center">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRAGOS PS4 JAILBREAK</title>
+    <style>
+        :root {
+            --bg-color: #0f111a;
+            --accent: #00d2ff;
+        }
 
-<h2>PS4 TEST</h2>
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            width: 100%;
+            height: 100%; 
+            overflow: hidden; 
+            background-color: var(--bg-color);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            
+            background-image: 
+              radial-gradient(circle at 50% 0%, rgba(0, 210, 255, 0.1) 0%, transparent 50%),
+              linear-gradient(to bottom, var(--bg-color), #090a0f);
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+        }
+        
+        #start-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            z-index: 9999;
+            cursor: pointer;
+            transition: opacity 0.5s ease;
+            background: transparent;
+            border: none;
+            outline: none;
+        }
 
-<video
-    controls
-    autoplay
-    loop
-    playsinline
-    width="640"
-    height="360">
-    
-    <source src="song.mp4" type="video/mp4">
-    
-</video>
+        #start-screen img { 
+            width: 220px; 
+            height: 220px; 
+            border-radius: 50%;
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.4);
+            border: 3px solid rgba(0, 210, 255, 0.6);
+            object-fit: cover;
+            display: block;
+        }
+
+        #start-screen b { 
+            font-size: 36px; 
+            font-weight: 800; 
+            letter-spacing: 0.15em;
+            background: linear-gradient(90deg, #fff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        #start-screen p { 
+            color: #94a3b8; 
+            margin-top: 15px; 
+            font-size: 16px; 
+            font-weight: bold;
+            letter-spacing: 2px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+        }
+
+        #main-frame { 
+            width: 100%; 
+            height: 100%; 
+            border: none; 
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none; 
+        }
+        
+        .active-frame {
+            pointer-events: auto !important;
+        }
+    </style>
+</head>
+<body>
+
+    <button id="start-screen" onclick="initSite()">
+        <img src="Dragos.png" alt="DRAGOS LOGO" />
+        <b>DRAGOS</b>
+        <p>TAP OR PRESS 'X' TO ENTER</p>
+    </button>
+
+    <!-- إرجاع وسم الصوت هنا لأنه أكثر استقراراً في البلايستيشن من الجافاسكريبت -->
+    <audio id="bg-music" loop preload="auto">
+        <source src="song.mp3" type="audio/mpeg">
+    </audio>
+
+    <iframe id="main-frame" src=""></iframe>
+
+    <script>
+        const startScreen = document.getElementById('start-screen');
+        const mainFrame = document.getElementById('main-frame');
+        const bgMusic = document.getElementById('bg-music');
+        let hasStarted = false;
+
+        function initSite() {
+            if (hasStarted) return; 
+            hasStarted = true;
+
+            // إخفاء الشاشة فوراً ليعرف المستخدم أنه تم الاستجابة للضغط
+            startScreen.style.opacity = '0';
+            mainFrame.style.opacity = '1';
+            mainFrame.classList.add('active-frame');
+            setTimeout(function() {
+                startScreen.style.display = 'none';
+            }, 500);
+
+            // ننتظر حتى يخبرنا المتصفح أن الصوت "بدأ بالتشغيل فعلياً"
+            bgMusic.onplaying = function() {
+                // نعطي المتصفح ثانيتين ليقوم بتحميل الصوت في الذاكرة لتجنب الانهيار
+                setTimeout(function() {
+                    mainFrame.src = "home.html"; // الآن فقط نقوم بتشغيل الجيلبريك
+                    mainFrame.focus();
+                }, 2000); 
+            };
+
+            // محاولة تشغيل الصوت
+            try {
+                let playPromise = bgMusic.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(function(error) {
+                        // في حال منع المتصفح الصوت لأي سبب، لا نوقف الجيلبريك بل نشغله فوراً
+                        mainFrame.src = "home.html";
+                    });
+                }
+            } catch(e) {
+                mainFrame.src = "home.html";
+            }
+        }
+    </script>
 
 </body>
 </html>
