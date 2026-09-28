@@ -21,7 +21,6 @@
             background-color: var(--bg-color);
             font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
             -webkit-tap-highlight-color: transparent;
-
             background-image:
                 radial-gradient(circle at 50% 0%, rgba(0, 210, 255, 0.1) 0%, transparent 50%),
                 linear-gradient(to bottom, var(--bg-color), #090a0f);
@@ -85,6 +84,8 @@
         }
 
         #main-frame {
+            position: relative;
+            z-index: 1;
             width: 100%;
             height: 100%;
             border: none;
@@ -97,22 +98,22 @@
             pointer-events: auto;
         }
 
-        /*
-          فيديو صغير وشفاف بدل audio؛
-          اتركه ظاهرًا مؤقتًا مع controls أثناء الاختبار إذا احتجت.
-        */
-        #bg-music {
+        /* رسالة تشخيص مؤقتة؛ احذفها بعد التأكد من الصوت */
+        #audio-status {
             position: fixed;
-            left: 0;
-            top: 0;
-            width: 2px;
-            height: 2px;
-            opacity: 0.01;
-            pointer-events: none;
+            left: 12px;
+            bottom: 12px;
+            z-index: 10001;
+            max-width: 85%;
+            padding: 8px 12px;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.82);
+            border: 1px solid rgba(0, 210, 255, 0.55);
+            border-radius: 6px;
+            font: 14px Arial, sans-serif;
         }
     </style>
 </head>
-
 <body>
 
     <button id="start-screen" type="button" onclick="initSite()">
@@ -121,32 +122,130 @@
         <p>TAP OR PRESS 'X' TO ENTER</p>
     </button>
 
-    <!--
-      ارفع song.mp4 في نفس مجلد هذا الملف.
-      يجب أن يكون MP4 بفيديو H.264 وصوت AAC-LC.
-    -->
-    <video
-        id="bg-music"
-        loop
-        preload="auto"
-        playsinline
-        webkit-playsinline
-    >
-        <source src="./song.mp4" type="video/mp4">
-    </video>
+    <div id="audio-status">جارٍ تجهيز الصوت…</div>
 
     <iframe id="main-frame" src=""></iframe>
 
     <script>
         var startScreen = document.getElementById("start-screen");
         var mainFrame = document.getElementById("main-frame");
-        var bgMusic = document.getElementById("bg-music");
+        var audioStatus = document.getElementById("audio-status");
 
+        var audioContext = null;
+        var songBuffer = null;
+        var musicSource = null;
+        var playRequested = false;
+        var contextUnlocked = false;
         var hasStarted = false;
         var homeLoaded = false;
 
+        function setAudioStatus(message) {
+            audioStatus.innerHTML = message;
+        }
+
+        function startMusic() {
+            if (!playRequested || !contextUnlocked || !songBuffer || !audioContext || musicSource) {
+                return;
+            }
+
+            try {
+                musicSource = audioContext.createBufferSource();
+                musicSource.buffer = songBuffer;
+                musicSource.loop = true;
+                musicSource.connect(audioContext.destination);
+                musicSource.start(0);
+                setAudioStatus("تم إرسال أمر تشغيل الصوت.");
+            } catch (e) {
+                musicSource = null;
+                setAudioStatus("تعذّر بدء الصوت في متصفح السوني.");
+            }
+        }
+
+        function unlockAudioFromClick() {
+            if (!audioContext) {
+                return;
+            }
+
+            try {
+                if (audioContext.resume) {
+                    var resumeResult = audioContext.resume();
+
+                    if (resumeResult && typeof resumeResult.then === "function") {
+                        resumeResult.then(function () {
+                            contextUnlocked = true;
+                            startMusic();
+                        }, function () {
+                            setAudioStatus("المتصفح رفض تفعيل الصوت بعد الضغط.");
+                        });
+                    } else {
+                        contextUnlocked = true;
+                        startMusic();
+                    }
+                } else {
+                    contextUnlocked = true;
+                    startMusic();
+                }
+            } catch (e) {
+                setAudioStatus("تعذّر تفعيل الصوت في المتصفح.");
+            }
+        }
+
+        function loadSong() {
+            var AudioContextClass = window.AudioContext || window.webkitAudioContext;
+
+            if (!AudioContextClass) {
+                setAudioStatus("هذا المتصفح لا يوفّر Web Audio API.");
+                return;
+            }
+
+            try {
+                audioContext = new AudioContextClass();
+                contextUnlocked = (audioContext.state === "running");
+            } catch (e) {
+                setAudioStatus("تعذّر إنشاء AudioContext.");
+                return;
+            }
+
+            setAudioStatus("جارٍ تحميل song.mp3…");
+
+            var request = new XMLHttpRequest();
+            request.open("GET", "./song.mp3", true);
+            request.responseType = "arraybuffer";
+
+            request.onload = function () {
+                if (request.status < 200 || request.status >= 300) {
+                    setAudioStatus("فشل تحميل song.mp3. رمز الحالة: " + request.status);
+                    return;
+                }
+
+                try {
+                    audioContext.decodeAudioData(
+                        request.response,
+                        function (decodedBuffer) {
+                            songBuffer = decodedBuffer;
+                            setAudioStatus("الصوت جاهز؛ اضغط X للبدء.");
+                            startMusic();
+                        },
+                        function () {
+                            setAudioStatus("متصفح السوني لم يستطع فك ترميز ملف MP3.");
+                        }
+                    );
+                } catch (e) {
+                    setAudioStatus("حدث خطأ أثناء فك ترميز ملف MP3.");
+                }
+            };
+
+            request.onerror = function () {
+                setAudioStatus("فشل الاتصال بملف song.mp3.");
+            };
+
+            request.send();
+        }
+
         function loadHome() {
-            if (homeLoaded) return;
+            if (homeLoaded) {
+                return;
+            }
 
             homeLoaded = true;
             mainFrame.src = "home.html";
@@ -156,13 +255,17 @@
             try {
                 mainFrame.focus();
             } catch (e) {
-                // تجاهل إذا لم يدعم المتصفح focus للإطار
+                // تجاهل إن لم يدعم المتصفح التركيز على الإطار
             }
         }
 
         function initSite() {
-            if (hasStarted) return;
+            if (hasStarted) {
+                return;
+            }
+
             hasStarted = true;
+            playRequested = true;
 
             startScreen.style.opacity = "0";
             mainFrame.style.opacity = "1";
@@ -172,34 +275,15 @@
                 startScreen.style.display = "none";
             }, 500);
 
-            /*
-              إذا بدأ الفيديو، ننتظر ثانيتين ثم نفتح home.html.
-              إذا فشل التشغيل، نفتح home.html على أي حال.
-            */
-            bgMusic.onplaying = function () {
-                setTimeout(loadHome, 2000);
-            };
+            /* استئناف الصوت مباشرة من ضغطة المستخدم */
+            unlockAudioFromClick();
 
-            bgMusic.onerror = function () {
-                loadHome();
-            };
-
-            try {
-                var playResult = bgMusic.play();
-
-                if (playResult && typeof playResult.catch === "function") {
-                    playResult.catch(function () {
-                        loadHome();
-                    });
-                }
-            } catch (e) {
-                loadHome();
-            }
-
-            // احتياط حتى لا تبقى الصفحة عالقة إذا لم يرسل المتصفح حدث التشغيل
-            setTimeout(loadHome, 5000);
+            /* لا نعلّق تحميل الصفحة بانتظار الصوت */
+            setTimeout(loadHome, 3000);
         }
-    </script>
 
+        /* حمّل وفك ترميز MP3 قبل ضغط X */
+        loadSong();
+    </script>
 </body>
 </html>
