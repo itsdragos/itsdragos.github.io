@@ -101,34 +101,52 @@
         <p>TAP OR PRESS 'X' TO ENTER</p>
     </button>
 
-    <!-- لاحظ أننا أزلنا src="home.html" من هنا لمنع الجيلبريك من العمل في الخلفية -->
+    <!-- إرجاع وسم الصوت هنا لأنه أكثر استقراراً في البلايستيشن من الجافاسكريبت -->
+    <audio id="bg-music" loop preload="auto">
+        <source src="song.mp3" type="audio/mpeg">
+    </audio>
+
     <iframe id="main-frame" src=""></iframe>
 
     <script>
         const startScreen = document.getElementById('start-screen');
         const mainFrame = document.getElementById('main-frame');
-        
-        let bgMusic = new Audio('song.mp3');
-        bgMusic.loop = true;
+        const bgMusic = document.getElementById('bg-music');
         let hasStarted = false;
 
         function initSite() {
             if (hasStarted) return; 
             hasStarted = true;
 
-            // 1. تشغيل الصوت أولاً وإعطاؤه الأولوية
-            bgMusic.play();
-
+            // إخفاء الشاشة فوراً ليعرف المستخدم أنه تم الاستجابة للضغط
             startScreen.style.opacity = '0';
             mainFrame.style.opacity = '1';
             mainFrame.classList.add('active-frame');
-            
-            // 2. ننتظر ثانية واحدة (1000 ملي ثانية) ليستقر مشغل الصوت، ثم نحمل صفحة الجيلبريك
             setTimeout(function() {
                 startScreen.style.display = 'none';
-                mainFrame.src = "home.html"; // يتم تحميل الثغرة هنا
-                mainFrame.focus();
-            }, 1000);
+            }, 500);
+
+            // ننتظر حتى يخبرنا المتصفح أن الصوت "بدأ بالتشغيل فعلياً"
+            bgMusic.onplaying = function() {
+                // نعطي المتصفح ثانيتين ليقوم بتحميل الصوت في الذاكرة لتجنب الانهيار
+                setTimeout(function() {
+                    mainFrame.src = "home.html"; // الآن فقط نقوم بتشغيل الجيلبريك
+                    mainFrame.focus();
+                }, 2000); 
+            };
+
+            // محاولة تشغيل الصوت
+            try {
+                let playPromise = bgMusic.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(function(error) {
+                        // في حال منع المتصفح الصوت لأي سبب، لا نوقف الجيلبريك بل نشغله فوراً
+                        mainFrame.src = "home.html";
+                    });
+                }
+            } catch(e) {
+                mainFrame.src = "home.html";
+            }
         }
     </script>
 
