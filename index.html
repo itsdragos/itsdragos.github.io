@@ -1,18 +1,84 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dragos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRAGOS PS4 JAILBREAK</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
-        iframe { width: 100%; height: 100%; border: none; }
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            height: 100%; 
+            overflow: hidden; 
+            background-color: #0f111a;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        #start-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #0f111a;
+            color: #00d2ff;
+            z-index: 9999;
+            cursor: pointer;
+            transition: opacity 0.5s ease;
+        }
+
+        #start-screen h1 { margin: 0; font-size: 32px; letter-spacing: 2px; text-transform: uppercase; }
+        #start-screen p { color: #94a3b8; margin-top: 15px; font-size: 16px; }
+
+        #main-frame { 
+            width: 100%; 
+            height: 100%; 
+            border: none; 
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
     </style>
 </head>
 <body>
-    <audio id="bg-music" autoplay loop>
+
+    <div id="start-screen">
+        <h1>DRAGOS</h1>
+        <p>TAP TO ENTER</p>
+    </div>
+
+    <audio id="bg-music" loop playsinline>
         <source src="song.mp3" type="audio/mpeg">
     </audio>
 
-    <iframe src="home.html" name="contentFrame"></iframe>
+    <iframe id="main-frame" src="home.html"></iframe>
+
+    <script>
+        const startScreen = document.getElementById('start-screen');
+        const mainFrame = document.getElementById('main-frame');
+        const bgMusic = document.getElementById('bg-music');
+
+        function initSite() {
+            bgMusic.play().then(() => {
+                startScreen.style.opacity = '0';
+                mainFrame.style.opacity = '1';
+                setTimeout(() => {
+                    startScreen.style.display = 'none';
+                }, 500);
+            }).catch((error) => {
+                console.log("Audio playback failed:", error);
+                startScreen.style.opacity = '0';
+                mainFrame.style.opacity = '1';
+                setTimeout(() => {
+                    startScreen.style.display = 'none';
+                }, 500);
+            });
+        }
+
+        startScreen.addEventListener('click', initSite);
+        startScreen.addEventListener('touchstart', initSite);
+    </script>
+
 </body>
 </html>
