@@ -20,7 +20,6 @@
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             -webkit-tap-highlight-color: transparent;
             
-            /* تم نقل نفس خلفية موقعك الأصلي هنا ليكون الانتقال سلساً */
             background-image: 
               radial-gradient(circle at 50% 0%, rgba(0, 210, 255, 0.1) 0%, transparent 50%),
               linear-gradient(to bottom, var(--bg-color), #090a0f);
@@ -29,6 +28,7 @@
             background-size: cover;
         }
         
+        /* تحويل الشاشة إلى زر فعلي لتجاوز حماية متصفح PS4 */
         #start-screen {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -40,9 +40,11 @@
             z-index: 9999;
             cursor: pointer;
             transition: opacity 0.5s ease;
+            background: transparent;
+            border: none;
+            outline: none;
         }
 
-        /* قياسات وتصميم الصورة مطابقة تماماً لطلبك */
         #start-screen img { 
             width: 220px; 
             height: 220px; 
@@ -53,7 +55,6 @@
             display: block;
         }
 
-        /* تصميم النص مطابق لطلبك */
         #start-screen b { 
             font-size: 36px; 
             font-weight: 800; 
@@ -62,9 +63,9 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-transform: uppercase;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
 
-        /* نص النقر للدخول مع حركة خفيفة */
         #start-screen p { 
             color: #94a3b8; 
             margin-top: 15px; 
@@ -72,6 +73,7 @@
             font-weight: bold;
             letter-spacing: 2px;
             animation: pulse 1.5s infinite;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
 
         @keyframes pulse {
@@ -86,7 +88,7 @@
             border: none; 
             opacity: 0;
             transition: opacity 0.5s ease;
-            pointer-events: none; /* يمنع متصفح السوني من التفاعل مع الإطار قبل الدخول */
+            pointer-events: none; 
         }
         
         .active-frame {
@@ -96,36 +98,32 @@
 </head>
 <body>
 
-    <div id="start-screen">
+    <!-- استخدام وسم button لضمان تسجيل ضغطة X كأمر تفاعلي -->
+    <button id="start-screen" onclick="initSite()">
         <img src="Dragos.png" alt="DRAGOS LOGO" />
         <b>DRAGOS</b>
         <p>TAP OR PRESS 'X' TO ENTER</p>
-    </div>
-
-    <!-- إضافة preload لتجهيز الأغنية في ذاكرة الـ PS4 -->
-    <audio id="bg-music" loop playsinline preload="auto">
-        <source src="song.mp3" type="audio/mpeg">
-    </audio>
+    </button>
 
     <iframe id="main-frame" src="home.html"></iframe>
 
     <script>
         const startScreen = document.getElementById('start-screen');
         const mainFrame = document.getElementById('main-frame');
-        const bgMusic = document.getElementById('bg-music');
+        
+        // إنشاء ملف الصوت برمجياً لتخطي قيود وسم الـ HTML في الـ PS4
+        let bgMusic = new Audio('song.mp3');
+        bgMusic.loop = true;
         let hasStarted = false;
 
         function initSite() {
-            if (hasStarted) return; // يمنع الكود من العمل مرتين عند الضغط المتكرر
+            if (hasStarted) return; 
             hasStarted = true;
 
-            // تم استبدال الكود الحديث بكود كلاسيكي لتجنب مشاكل متصفح PS4
-            try {
-                bgMusic.play();
-            } catch (e) {
-                // حتى لو فشل الصوت، سيدخلك للموقع ولن يعلق
-            }
+            // تشغيل الصوت
+            bgMusic.play();
 
+            // إخفاء شاشة البداية وإظهار الموقع
             startScreen.style.opacity = '0';
             mainFrame.style.opacity = '1';
             mainFrame.classList.add('active-frame');
@@ -135,12 +133,6 @@
                 mainFrame.focus();
             }, 500);
         }
-
-        // تسجيل جميع أنواع الضغطات (لمس، ماوس، وأزرار يد السوني) لتأكيد الاستجابة
-        document.addEventListener('click', initSite);
-        document.addEventListener('mousedown', initSite);
-        document.addEventListener('touchstart', initSite);
-        document.addEventListener('keydown', initSite);
     </script>
 
 </body>
