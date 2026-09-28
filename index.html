@@ -2,24 +2,33 @@
 <html>
 <body style="background:#111;color:white">
 
-<button onclick="testAudio()">PLAY SOUND</button>
+<h1>Audio Test</h1>
 
-<audio id="audio" controls loop>
-    <source src="song.mp3" type="audio/mpeg">
+<audio controls preload="auto">
+    <source src="./song.mp3" type="audio/mpeg">
+    Your browser does not support audio.
 </audio>
 
-<script>
-function testAudio() {
-    var audio = document.getElementById("audio");
+<p id="status">Testing...</p>
 
-    audio.play()
-        .then(function () {
-            console.log("PLAY OK");
-        })
-        .catch(function (e) {
-            console.log("PLAY ERROR", e);
-        });
-}
+<script>
+window.onload = function () {
+    var audio = document.querySelector("audio");
+    var status = document.getElementById("status");
+
+    audio.addEventListener("canplay", function () {
+        status.innerHTML = "CAN PLAY";
+    });
+
+    audio.addEventListener("error", function () {
+        status.innerHTML = "AUDIO ERROR";
+        console.log(audio.error);
+    });
+
+    audio.addEventListener("loadeddata", function () {
+        status.innerHTML = "AUDIO LOADED";
+    });
+};
 </script>
 
 </body>
